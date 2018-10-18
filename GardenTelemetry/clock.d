@@ -1,0 +1,11 @@
+.\clock.o: clock.c
+.\clock.o: C:\Keil\ARM\ARMCC\bin\..\include\stdio.h
+.\clock.o: clock.h
+.\clock.o: C:\Keil\ARM\ARMCC\bin\..\include\stdint.h
+.\clock.o: C:\Keil\ARM\ARMCC\bin\..\include\math.h
+.\clock.o: ST7735.h
+.\clock.o: fixed.h
+.\clock.o: bitmaps.h
+.\clock.o: PWM.h
+.\clock.o: Timer.h
+.\clock.o: ../inc/tm4c123gh6pm.h
