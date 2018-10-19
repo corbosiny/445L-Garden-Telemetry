@@ -5,8 +5,10 @@
 
 #define CLOCK_MODE								0
 #define SET_ALARM_MODE					  1
+#define GRAPH_SENSORS_MODE        2
 
 static int alarmIsArmed = 0;
+static int alarmVolume = 50;
 
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
@@ -31,11 +33,16 @@ void updateTime(void);
 
 void displayCurrentTime(int currentHours, int currentMinutes, int currentSeconds, char* meridiem);
 
+void setSecond(int newSeconds);
 void setMinute(int newMinute);
 void setHour(int newHour);
 void toggleMerridian(void);
 
 void initClock(int clockX, int clockY);
+
+void setSensor(int newSensor);
+
+void putData(int reading);
 
 void displayClockHands(int currentHours, int currentMinutes);
 

@@ -21,8 +21,15 @@
 #define ALARM_X 5
 #define ALARM_Y 14
 
+#define MAX_SAMPLES 20
+int dataBuffer[MAX_SAMPLES];
+int PMFbuffer[4096];
+int dataBufferIndex = 0;
+int currentSensor = 0;
+
 #define CLOCK_TITLE "Clock Mode"
 #define SET_ALARM_TITLE "Setting Alarm"
+#define GRAPH_SENSORS_TITLE "Sensor Readings"
 
 int currentMode = CLOCK_MODE;
 int initMode = 1;
@@ -167,6 +174,63 @@ void setAlarmMode()
 		
 }
 
+void graphSensorsMode(int previousMode)
+{
+	if(initMode == 1)
+	{
+		DisableInterrupts();
+		initMode = 0;
+		if(previousMode == CLOCK_MODE)
+		{
+			prevHours = hours;
+			prevMinutes = minutes;
+			prevSeconds = seconds;
+		}
+		else
+		{
+			alarmHours = hours;
+			alarmMinutes = minutes;
+			alarmSeconds = seconds;
+		}
+		ST7735_FillScreen(ST7735_BLACK); 
+	  printModeTitle(GRAPH_SENSORS_TITLE);
+		ST7735_SetCursor(0,0);
+		EnableInterrupts();
+  }
+	
+	if(dataBufferIndex == MAX_SAMPLES)
+	{
+		  dataBufferIndex = 0;
+		
+			int minADC = 4096;
+			int maxADC = 0;
+			int minPMF = 4096;
+			int maxPMF = 0;
+			
+			for(int i = 0; i < MAX_SAMPLES; i++)
+			{
+				int reading = dataBuffer[i];
+				PMFbuffer[reading] += 1;
+				if(reading > maxADC) {maxADC = reading;}
+				if(reading < minADC) {minADC = reading;}
+				if(PMFbuffer[reading] > maxPMF) {maxPMF = PMFbuffer[reading];}
+				if(PMFbuffer[reading] < minPMF) {minPMF = PMFbuffer[reading];}
+			}
+			
+			ST7735_PlotClear(minPMF, maxPMF);
+			
+			if(minADC < 50) {minADC = 0;}
+			for(int i = minADC - 50; i <= maxADC; i++)
+			{
+				ST7735_PlotBar(PMFbuffer[i]);
+				ST7735_PlotNext();
+			}
+			for(int i = 0; i < 4096; i++) {PMFbuffer[i] = 0;}
+	}
+	
+	
+}
+
 void initClock(int clockX, int clockY)
 {
 	clockOrigin[0] = clockX;
@@ -189,6 +253,27 @@ void setHour(int newHour)
 	hours = newHour;
 	timeChanged = 1;
 	EnableInterrupts();
+}
+
+void setSecond(int newSeconds)
+{
+	DisableInterrupts();
+	seconds = newSeconds;
+	timeChanged = 1;
+	EnableInterrupts();
+}
+
+void setSensor(int newSensor)
+{
+	DisableInterrupts();
+	currentSensor = newSensor;
+	dataBufferIndex = 0;
+	EnableInterrupts();
+}
+
+void putData(int reading)
+{
+	dataBuffer[dataBufferIndex++] = reading;
 }
 
 void toggleMerridian()
@@ -239,7 +324,7 @@ void printAlarmStatus(char *title)
 
 void setOffAlarm()
 {
-	PWM0A_Init(40000, 30000);  
+	PWM0A_Init(40000, 3000 * alarmVolume);  
 }
 
 void disableAlarm()

@@ -49,8 +49,8 @@
 #include "PWM.h"
 #include "ADCSWTrigger.h"
 
-void EnableInterrupts(void);    // Defined in startup.s
-void DisableInterrupts(void);   // Defined in startup.s
+//void EnableInterrupts(void);    // Defined in startup.s
+//void DisableInterrupts(void);   // Defined in startup.s
 void WaitForInterrupt(void);    // Defined in startup.s
 
 uint32_t LED;      // VP1
@@ -64,6 +64,8 @@ uint32_t pin_num;
 uint32_t pin_int;
  
 int editTime = 0;
+
+int growLightDuty = 0;
 // ----------------------------------- TM4C_to_Blynk ------------------------------
 // Send data to the Blynk App
 // It uses Virtual Pin numbers between 70 and 99
@@ -107,7 +109,12 @@ void Blynk_to_TM4C(void){int j; char data;
     pin_int = atoi(Pin_Integer);  
   // ---------------------------- VP #1 ----------------------------------------
   // This VP is the LED select button
-    if(pin_num == 0x01)  
+		if(pin_num == 0x00)
+		{
+			growLightDuty = pin_int;
+			PWM0B_Duty(4000 * growLightDuty);
+		}
+    else if(pin_num == 0x01)  
 		{  
       LED = pin_int;
       PortF_Output(LED<<2); // Blue LED
@@ -128,8 +135,10 @@ void Blynk_to_TM4C(void){int j; char data;
 		}
 		else if(pin_num == 0x04)
 		{
-			 if(pin_int == 1) {editTime = 1;}
-			 else{editTime = 0;}
+			if(getMode() != GRAPH_SENSORS_MODE && pin_int == 1)
+			{
+				setMode(GRAPH_SENSORS_MODE);
+			}
 		}
 		else if(pin_num == 0x05)
 		{
@@ -152,12 +161,24 @@ void Blynk_to_TM4C(void){int j; char data;
 				setMinute(pin_int);
 			}
 		}
-		else if(pin_num == 0x08)
+		else if(pin_num == 0x0C)
+		{
+			if(editTime == 1)
+			{
+				setSecond(pin_int);
+			}
+		}
+	  else if(pin_num == 0x08)
+		{
+			 if(pin_int == 1) {editTime = 1;}
+			 else{editTime = 0;}
+		}
+		else if(pin_num == 0x09)
 		{
 			if(pin_int) {alarmIsArmed = 1; printAlarmStatus("ALARM ON ");}
 			else{alarmIsArmed = 0; printAlarmStatus("ALARM OFF"); disableAlarm();}
 		}
-		else if(pin_num == 0x09)
+		else if(pin_num == 0x0A)
 		{
 			if(pin_int == 1)
 			{
@@ -165,17 +186,29 @@ void Blynk_to_TM4C(void){int j; char data;
 				{
 					disableAlarm();
 				}
-		 }
-			
+			}
 		}
-		
+		else if(pin_num == 0x0B)
+		{
+			alarmVolume = pin_int;
+		}
+		else if(pin_num == 0x0C)
+		{
+			setSensor(pin_int);
+		}
   }  
 }
 
 void SendInformation(void)
 {
 	// your account will be temporarily halted if you send too much data
-  TM4C_to_Blynk(74, ADC0_InSeq3());  // VP74
+	int reading1 = ADC0_InSeq3();
+  TM4C_to_Blynk(74, reading1);  // VP74
+  	
+	if(getMode() == GRAPH_SENSORS_MODE)
+	{
+		putData(reading1);
+	}
 }
 
   
@@ -198,9 +231,8 @@ int main(void){
   
   Timer2_Init(&Blynk_to_TM4C, 800000); 
   Timer3_Init(&SendInformation, 40000000); 
-	
+	PWM0B_Init(40000, 4000 * growLightDuty);
 	EnableInterrupts();
-	//WaitForInterrupts();
   while(1) 
 	{   
 		switch(getMode())
