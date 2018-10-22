@@ -47,11 +47,19 @@
 #include "esp8266.h"
 #include "fixed.h"
 #include "PWM.h"
+#include "SysTick.h"
 #include "ADCSWTrigger.h"
 
-//void EnableInterrupts(void);    // Defined in startup.s
-//void DisableInterrupts(void);   // Defined in startup.s
+#define PF0       		(*((volatile uint32_t *)0x40025004))
+#define PF1       		(*((volatile uint32_t *)0x40025008))
+#define PF2       		(*((volatile uint32_t *)0x40025010))
+#define PF3       		(*((volatile uint32_t *)0x40025020))
+#define PF4           (*((volatile uint32_t *)0x40025040))
+
 void WaitForInterrupt(void);    // Defined in startup.s
+
+void masterMain(void);
+void slaveMain(void);
 
 uint32_t LED;      // VP1
 // These 6 variables contain the most recent Blynk to TM4C123 message
@@ -92,7 +100,8 @@ void Blynk_to_TM4C(void){int j; char data;
     // Read the data from the UART5
 #ifdef DEBUG1
     j = 0;
-    do{
+    do
+		{
       data = serial_buf[j];
       UART_OutChar(data);        // Debug only
       j++;
@@ -117,7 +126,7 @@ void Blynk_to_TM4C(void){int j; char data;
     else if(pin_num == 0x01)  
 		{  
       LED = pin_int;
-      PortF_Output(LED<<2); // Blue LED
+      PortF_Output(pin_int, 2); // Blue LED
     }     
 		else if(pin_num == 0x02)
 		{
@@ -204,20 +213,37 @@ void SendInformation(void)
 	// your account will be temporarily halted if you send too much data
 	int reading1 = ADC0_InSeq3();
   TM4C_to_Blynk(74, reading1);  // VP74
-  	
+	
+  PortF_Output(1, 1);	
+	
 	if(getMode() == GRAPH_SENSORS_MODE)
 	{
 		putData(reading1);
 	}
+	
+	PortF_Output(1, 0);
 }
 
   
-int main(void){       
+int main(void)
+{       
   PLL_Init(Bus80MHz);   // Bus clock at 80 MHz
   DisableInterrupts();  // Disable interrupts until finished with inits
   PortF_Init();
 	
-	ADC0_InitSWTriggerSeq3_Ch9();         // allow time to finish activating
+	if(PortF_Input() > 0)
+	{
+		masterMain();
+	}
+	else
+	{
+		slaveMain();
+	}
+}
+
+void masterMain()
+{
+		ADC0_InitSWTriggerSeq3_Ch9();         // allow time to finish activating
 	Output_Init(); 
 	
 #ifdef DEBUG1
@@ -232,6 +258,8 @@ int main(void){
   Timer2_Init(&Blynk_to_TM4C, 800000); 
   Timer3_Init(&SendInformation, 40000000); 
 	PWM0B_Init(40000, 4000 * growLightDuty);
+	
+	SysTick_Init();
 	EnableInterrupts();
   while(1) 
 	{   
@@ -249,4 +277,6 @@ int main(void){
   }
 }
 
-
+void slaveMain()
+{
+}
