@@ -42,6 +42,6 @@ uint32_t PortF_Input(void);
 
 // Output to LEDs
 // LEDs on bits 1,2,3
-void PortF_Output(uint32_t data);
+void PortF_Output(uint32_t data, int ledNum);
 #endif
 

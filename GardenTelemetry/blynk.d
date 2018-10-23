@@ -13,4 +13,5 @@
 .\blynk.o: fixed.h
 .\blynk.o: C:\Keil\ARM\ARMCC\bin\..\include\stdio.h
 .\blynk.o: PWM.h
+.\blynk.o: SysTick.h
 .\blynk.o: ADCSWTrigger.h
