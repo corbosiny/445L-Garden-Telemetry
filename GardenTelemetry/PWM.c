@@ -17,6 +17,7 @@
 //                = BusClock/2
 //                = 80 MHz/2 = 40 MHz (in this example)
 // Output on PB6/M0PWM0
+
 void PWM0A_Init(uint16_t period, uint16_t duty){
   SYSCTL_RCGCPWM_R |= 0x01;             // 1) activate PWM0
   SYSCTL_RCGCGPIO_R |= 0x02;            // 2) activate port B
@@ -49,7 +50,9 @@ void PWM0A_Duty(uint16_t duty){
 //                = BusClock/2
 //                = 80 MHz/2 = 40 MHz (in this example)
 // Output on PB7/M0PWM1
-void PWM0B_Init(uint16_t period, uint16_t duty){
+
+void PWM0B_Init(uint16_t period, uint16_t duty)
+{
   volatile unsigned long delay;
   SYSCTL_RCGCPWM_R |= 0x01;             // 1) activate PWM0
   SYSCTL_RCGCGPIO_R |= 0x02;            // 2) activate port B

@@ -56,10 +56,24 @@
 #define PF3       		(*((volatile uint32_t *)0x40025020))
 #define PF4           (*((volatile uint32_t *)0x40025040))
 
+#define EMAIL_PIN 98
+#define COMMAND_TX_PIN 99
+#define COMMAND_RX_PIN 14
+
+#define HEATER_PIN 2
+#define WATER_PIN 3
+#define LIGHT_PIN 4
+
+#define TURN_OFF_HEATER 0
+#define TURN_ON_HEATER 1
+#define TURN_OFF_WATER 2
+#define TURN_ON_WATER 3
+#define TURN_OFF_LIGHT 4
+#define TURN_ON_LIGHT 5
+
 void WaitForInterrupt(void);    // Defined in startup.s
 
 void masterMain(void);
-void slaveMain(void);
 
 uint32_t LED;      // VP1
 // These 6 variables contain the most recent Blynk to TM4C123 message
@@ -70,10 +84,51 @@ char Pin_Integer[8]  = "0000";     //
 char Pin_Float[8]    = "0.0000";   //
 uint32_t pin_num; 
 uint32_t pin_int;
- 
+
+int readingLimit1 = 300;
+int readingLimit2 = 500;
+int readingLimit3 = 400;
+
 int editTime = 0;
 
 int growLightDuty = 0;
+
+int isMaster;
+
+void initActuators()
+{
+  SYSCTL_RCGCGPIO_R |= 0x02;            // 2) activate port B
+  while((SYSCTL_PRGPIO_R&0x02) == 0){};
+  GPIO_PORTB_AFSEL_R &= ~(0x1C);           
+	GPIO_PORTB_DIR_R |= 0x1C;
+  GPIO_PORTB_AMSEL_R &= ~0x1C;          // disable analog functionality on PB4,3,2
+  GPIO_PORTB_DEN_R |= 0x1C;             // enable digital I/O on PB4,3,2
+	GPIO_PORTB_DATA_R &= ~(0x1C);
+}
+
+void initSensors()
+{
+	ADC0_InitSWTriggerSeq3_Ch9();         // allow time to finish activating
+}
+
+void changeHeaterState(int state)
+{
+		GPIO_PORTB_DATA_R &= ~(1 << HEATER_PIN);
+		GPIO_PORTB_DATA_R |= (state << HEATER_PIN);
+}
+
+void changeWaterState(int state)
+{
+		GPIO_PORTB_DATA_R &= ~(1 << WATER_PIN);
+		GPIO_PORTB_DATA_R |= (state << WATER_PIN);
+}
+
+void changeLightState(int state)
+{
+		GPIO_PORTB_DATA_R &= ~(1 << LIGHT_PIN);
+		GPIO_PORTB_DATA_R |= (state << LIGHT_PIN);
+}
+
 // ----------------------------------- TM4C_to_Blynk ------------------------------
 // Send data to the Blynk App
 // It uses Virtual Pin numbers between 70 and 99
@@ -118,33 +173,28 @@ void Blynk_to_TM4C(void){int j; char data;
     pin_int = atoi(Pin_Integer);  
   // ---------------------------- VP #1 ----------------------------------------
   // This VP is the LED select button
-		if(pin_num == 0x00)
+		if(pin_num == 1)
 		{
 			growLightDuty = pin_int;
-			PWM0B_Duty(4000 * growLightDuty);
-		}
-    else if(pin_num == 0x01)  
-		{  
-      LED = pin_int;
-      PortF_Output(pin_int, 2); // Blue LED
-    }     
+			PWM0B_Duty(400 * growLightDuty);
+		}   
 		else if(pin_num == 0x02)
 		{
-			if(getMode() != CLOCK_MODE && pin_int == 1)
+			if(getMode() != CLOCK_MODE)
 			{
 				setMode(CLOCK_MODE);
 			}
 		}
 		else if(pin_num == 0x03)
 		{
-			if(getMode() != SET_ALARM_MODE && pin_int == 1)
+			if(getMode() != SET_ALARM_MODE)
 			{
 				setMode(SET_ALARM_MODE);
 			}
 		}
 		else if(pin_num == 0x04)
 		{
-			if(getMode() != GRAPH_SENSORS_MODE && pin_int == 1)
+			if(getMode() != GRAPH_SENSORS_MODE)
 			{
 				setMode(GRAPH_SENSORS_MODE);
 			}
@@ -170,7 +220,7 @@ void Blynk_to_TM4C(void){int j; char data;
 				setMinute(pin_int);
 			}
 		}
-		else if(pin_num == 0x0C)
+		else if(pin_num == 0)
 		{
 			if(editTime == 1)
 			{
@@ -184,26 +234,41 @@ void Blynk_to_TM4C(void){int j; char data;
 		}
 		else if(pin_num == 0x09)
 		{
-			if(pin_int) {alarmIsArmed = 1; printAlarmStatus("ALARM ON ");}
+			if(pin_int) {alarmIsArmed = 1; printAlarmStatus("ALARM ON "); enableAlarm();}
 			else{alarmIsArmed = 0; printAlarmStatus("ALARM OFF"); disableAlarm();}
 		}
-		else if(pin_num == 0x0A)
-		{
-			if(pin_int == 1)
-			{
-				if(getMode() == CLOCK_MODE)
-				{
-					disableAlarm();
-				}
-			}
-		}
-		else if(pin_num == 0x0B)
-		{
-			alarmVolume = pin_int;
-		}
-		else if(pin_num == 0x0C)
+		else if(pin_num == 0x0D)
 		{
 			setSensor(pin_int);
+		}
+		else if(pin_num == COMMAND_RX_PIN)
+		{
+			switch(pin_int)
+			{
+				case TURN_OFF_HEATER:
+				changeHeaterState(0);
+				break;
+				
+				case TURN_ON_HEATER:
+				changeHeaterState(1);
+				break;
+				
+				case TURN_OFF_WATER:
+				changeWaterState(0);
+				break;
+				
+				case TURN_ON_WATER:
+				changeWaterState(1);
+				break;
+				
+				case TURN_OFF_LIGHT:
+				changeLightState(0);
+				break;
+				
+				case TURN_ON_LIGHT:
+				changeLightState(1);
+				break;
+			}
 		}
   }  
 }
@@ -212,13 +277,53 @@ void SendInformation(void)
 {
 	// your account will be temporarily halted if you send too much data
 	int reading1 = ADC0_InSeq3();
-  TM4C_to_Blynk(74, reading1);  // VP74
+	int reading2 = 1200;
+	int reading3 = 1200;
+	//int reading2 = ADC0_InSeq1();
+	//int reading3 = ADC0_InSeq2();
 	
   PortF_Output(1, 1);	
 	
+	TM4C_to_Blynk(74, reading1);  // VP74
 	if(getMode() == GRAPH_SENSORS_MODE)
 	{
 		putData(reading1);
+	}
+	
+	if(reading1 <= readingLimit1 && isMaster)
+	{
+		TM4C_to_Blynk(EMAIL_PIN, reading1);
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_ON_HEATER);
+		changeHeaterState(1);
+	}
+	else if(reading1 > readingLimit1 && isMaster)
+	{
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_OFF_HEATER);
+		changeHeaterState(0);
+	}
+	
+	if(reading2 <= readingLimit2 && isMaster)
+	{
+		TM4C_to_Blynk(EMAIL_PIN, reading2);
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_ON_WATER);
+		changeWaterState(1);
+	}
+	else if(reading2 > readingLimit2 && isMaster)
+	{
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_OFF_WATER);
+		changeWaterState(0);
+	}
+	
+	if(reading3 <= readingLimit3 && isMaster)
+	{
+		TM4C_to_Blynk(EMAIL_PIN, reading3);
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_ON_LIGHT);
+		changeLightState(1);
+	}
+	else if(reading3 > readingLimit3 && isMaster)
+	{
+		TM4C_to_Blynk(COMMAND_TX_PIN, TURN_OFF_LIGHT);
+		changeLightState(0);
 	}
 	
 	PortF_Output(1, 0);
@@ -228,23 +333,22 @@ void SendInformation(void)
 int main(void)
 {       
   PLL_Init(Bus80MHz);   // Bus clock at 80 MHz
+	ST7735_InitR(INITR_REDTAB);
   DisableInterrupts();  // Disable interrupts until finished with inits
-  PortF_Init();
+	initActuators();
+  initSensors();
+	Output_Init(); 
+	PortF_Init();
 	
-	if(PortF_Input() > 0)
-	{
-		masterMain();
-	}
-	else
-	{
-		slaveMain();
-	}
+	
+	if(PortF_Input() > 0) {isMaster = 1;}
+	else{isMaster = 0;}
+
+	masterMain();
 }
 
 void masterMain()
 {
-		ADC0_InitSWTriggerSeq3_Ch9();         // allow time to finish activating
-	Output_Init(); 
 	
 #ifdef DEBUG1
   UART_Init(5);         // Enable Debug Serial Port
@@ -257,7 +361,7 @@ void masterMain()
   
   Timer2_Init(&Blynk_to_TM4C, 800000); 
   Timer3_Init(&SendInformation, 40000000); 
-	PWM0B_Init(40000, 4000 * growLightDuty);
+	PWM0B_Init(40000, 400 * growLightDuty);
 	
 	SysTick_Init();
 	EnableInterrupts();
@@ -272,11 +376,12 @@ void masterMain()
 			case SET_ALARM_MODE:
 		  setAlarmMode();	
 			break;
+			
+			case GRAPH_SENSORS_MODE:
+			graphSensorsMode();
+			break;
 		}
 		
   }
 }
 
-void slaveMain()
-{
-}

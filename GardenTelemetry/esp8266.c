@@ -28,15 +28,15 @@
 #include "ST7735.h"
 #include "esp8266.h"
 // the following two lines connect you to the internet
-char    ssid[32]        = "EE-IOT-Platform-03";
-char    pass[32]        = "dUQQE?&W44x7";
+//char    ssid[32]        = "EE-IOT-Platform-03";
+//char    pass[32]        = "dUQQE?&W44x7";
 
-//char    ssid[32]        = "HAIL HYDRA";
-//char    pass[32]        = "corbosiny247";
+char    ssid[32]        = "HAIL HYDRA";
+char    pass[32]        = "corbosiny247";
 
 // create your own Blynk server app and edit this next line with your authentication code
 char    auth[64]        = "ee284da122f14ee49c8a323c1d87f7cc";
-
+//char auth[64] = "7e31c5f8f2174a7aa928e674b207bcd0";
 #define UART_FR_RXFF            0x00000040  // UART Receive FIFO Full
 #define UART_FR_TXFF            0x00000020  // UART Transmit FIFO Full
 #define UART_FR_RXFE            0x00000010  // UART Receive FIFO Empty

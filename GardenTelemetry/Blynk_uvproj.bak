@@ -431,16 +431,6 @@
               <FilePath>.\ST7735.c</FilePath>
             </File>
             <File>
-              <FileName>Timer2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Timer2.c</FilePath>
-            </File>
-            <File>
-              <FileName>Timer3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Timer3.c</FilePath>
-            </File>
-            <File>
               <FileName>esp8266.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\esp8266.c</FilePath>
@@ -494,6 +484,16 @@
               <FileName>ADCSWTrigger.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\ADCSWTrigger.h</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Timer.h</FilePath>
             </File>
           </Files>
         </Group>
