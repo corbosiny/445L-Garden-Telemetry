@@ -25,7 +25,11 @@ void clockMode(void);
 
 void setAlarmMode(void);
 
+void graphSensorsMode(void);
+
 void setOffAlarm(void);
+
+void enableAlarm(void);
 
 void disableAlarm(void);
 

@@ -23,7 +23,7 @@
 
 #define MAX_SAMPLES 20
 int dataBuffer[MAX_SAMPLES];
-int PMFbuffer[4096];
+int PMFbuffer[4097];
 int dataBufferIndex = 0;
 int currentSensor = 0;
 
@@ -32,6 +32,7 @@ int currentSensor = 0;
 #define GRAPH_SENSORS_TITLE "Sensor Readings"
 
 int currentMode = CLOCK_MODE;
+int lastMode = CLOCK_MODE;
 int initMode = 1;
 
 const int HOUR_HAND_SIZE = 17;
@@ -39,7 +40,7 @@ const int MINUTE_HAND_SIZE = 	25;
 int clockOrigin[2];
 int clockCenter[2];
 
-int minutes = 59;
+int minutes = 30;
 int seconds = 40;
 int hours = 11;
 
@@ -57,13 +58,15 @@ int topMinutes = 3;
 int alarmSeconds = 0;
 int alarmMinutes = 0;
 int alarmHours = 12;
+int alarmSet = 0;
+
 int timeChanged = 0;
 int minuteChanged = 0;
 
 char am[] = "am";
 char pm[] = "pm";
 char *merridian = am;
-char *alarmMerridian = am;
+char *alarmMerridian = pm;
 char *prevMerridian = am;
 
 int getMode()
@@ -73,7 +76,7 @@ int getMode()
 
 void setMode(int newMode)
 {
-	if(newMode != currentMode) {initMode = 1;}
+	if(newMode != currentMode) {initMode = 1; lastMode = currentMode;}
 	currentMode = newMode;
 }
 
@@ -93,10 +96,14 @@ void clockMode()
 		initClock(32, 64);
 		printModeTitle(CLOCK_TITLE);
 		DisableInterrupts();
-		alarmHours = hours;
-		alarmMinutes = minutes;
-		alarmSeconds = seconds;
-		alarmMerridian = merridian;
+		if(lastMode == SET_ALARM_MODE)
+		{
+			alarmHours = hours;
+			alarmMinutes = minutes;
+			alarmSeconds = seconds;
+			alarmMerridian = merridian;
+		}
+		lastMode = CLOCK_MODE;
 		hours = prevHours;
 		minutes = prevMinutes;
 		seconds = prevSeconds;
@@ -117,7 +124,7 @@ void clockMode()
 		timeChanged = 0;
 		EnableInterrupts();
 		displayCurrentTime(currentHours, currentMinutes, currentSeconds, merridian);
-		if(currentHours == alarmHours && currentMinutes == alarmMinutes && currentSeconds == alarmSeconds)
+		if(currentHours == alarmHours && currentMinutes == alarmMinutes && currentSeconds == alarmSeconds && alarmSet == 1)
 		{
 			setOffAlarm();
 		}
@@ -140,21 +147,26 @@ void setAlarmMode()
 {	if(initMode == 1)
 	{
 		DisableInterrupts();
+		TIMER0_IMR_R = 0;
 		initMode = 0;
 		ST7735_FillScreen(ST7735_BLACK); 
 		ST7735_SetCursor(0,0);
-		initClock(32, 64);
+		//initClock(32, 64);
 		printModeTitle(SET_ALARM_TITLE);
-		prevHours = hours;
-		prevMinutes = minutes;
-		prevSeconds = seconds;
-		prevMerridian = merridian;
+		if(lastMode == CLOCK_MODE)
+		{
+			prevHours = hours;
+			prevMinutes = minutes;
+			prevSeconds = seconds;
+			prevMerridian = merridian;
+		}
+		lastMode = SET_ALARM_MODE;
 		hours = alarmHours;
 		minutes = alarmMinutes;
 		seconds = alarmSeconds;
 		merridian = alarmMerridian;
-		ST7735_DrawBitmap(clockOrigin[0], clockOrigin[1], clock, clockSize, clockSize);
-		displayClockHands(hours, minutes);
+		//ST7735_DrawBitmap(clockOrigin[0], clockOrigin[1], clock, clockSize, clockSize);
+		//displayClockHands(hours, minutes);
 		timeChanged = 1;
 		EnableInterrupts();
 	}
@@ -167,21 +179,22 @@ void setAlarmMode()
 		int currentHours = hours;
 		timeChanged = 0;
 		EnableInterrupts();
-		ST7735_DrawBitmap(clockOrigin[0], clockOrigin[1], clock, clockSize, clockSize);
+		//ST7735_DrawBitmap(clockOrigin[0], clockOrigin[1], clock, clockSize, clockSize);
 		displayCurrentTime(currentHours, currentMinutes, currentSeconds, merridian);
-		displayClockHands(currentHours, currentMinutes);
+		//displayClockHands(currentHours, currentMinutes);
 	}
 		
 }
 
-void graphSensorsMode(int previousMode)
+void graphSensorsMode(void)
 {
 	if(initMode == 1)
 	{
 		DisableInterrupts();
 		initMode = 0;
-		if(previousMode == CLOCK_MODE)
+		if(lastMode == CLOCK_MODE)
 		{
+			TIMER0_IMR_R = 0;
 			prevHours = hours;
 			prevMinutes = minutes;
 			prevSeconds = seconds;
@@ -192,9 +205,10 @@ void graphSensorsMode(int previousMode)
 			alarmMinutes = minutes;
 			alarmSeconds = seconds;
 		}
+		lastMode = GRAPH_SENSORS_MODE;
 		ST7735_FillScreen(ST7735_BLACK); 
-	  printModeTitle(GRAPH_SENSORS_TITLE);
-		ST7735_SetCursor(0,0);
+		ST7735_SetCursor(0, 0);
+		ST7735_OutString(GRAPH_SENSORS_TITLE);
 		EnableInterrupts();
   }
 	
@@ -206,6 +220,7 @@ void graphSensorsMode(int previousMode)
 			int maxADC = 0;
 			int minPMF = 4096;
 			int maxPMF = 0;
+			
 			
 			for(int i = 0; i < MAX_SAMPLES; i++)
 			{
@@ -219,13 +234,13 @@ void graphSensorsMode(int previousMode)
 			
 			ST7735_PlotClear(minPMF, maxPMF);
 			
-			if(minADC < 50) {minADC = 0;}
+			if(minADC < 50) {minADC = 50;}
 			for(int i = minADC - 50; i <= maxADC; i++)
 			{
 				ST7735_PlotBar(PMFbuffer[i]);
 				ST7735_PlotNext();
 			}
-			for(int i = 0; i < 4096; i++) {PMFbuffer[i] = 0;}
+			for(int i = 0; i < 4097; i++) {PMFbuffer[i] = 0;}
 	}
 	
 	
@@ -318,18 +333,26 @@ void calculateEndingPoint(int endingPoint[2], int radius, float percentageThroug
 
 void printAlarmStatus(char *title)
 {
+	DisableInterrupts();
 	ST7735_SetCursor(ALARM_X, ALARM_Y);
 	ST7735_OutString(title);
+	EnableInterrupts();
 }
 
 void setOffAlarm()
 {
-	PWM0A_Init(40000, 3000 * alarmVolume);  
+	PWM0A_Init(40000, 400 * alarmVolume);  
+}
+
+void enableAlarm()
+{
+	alarmSet = 1;
 }
 
 void disableAlarm()
 {
 	SYSCTL_RCGCPWM_R &= ~(0x01);   
+  alarmSet = 0;
 }
 
 void swapMerridian()
