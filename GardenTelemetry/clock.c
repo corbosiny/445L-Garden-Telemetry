@@ -286,11 +286,6 @@ void setSensor(int newSensor)
 	EnableInterrupts();
 }
 
-int getSensor()
-{
-	return currentSensor;
-}
-
 void putData(int reading)
 {
 	dataBuffer[dataBufferIndex++] = reading;

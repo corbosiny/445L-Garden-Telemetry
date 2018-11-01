@@ -45,7 +45,6 @@ void toggleMerridian(void);
 void initClock(int clockX, int clockY);
 
 void setSensor(int newSensor);
-int getSensor(void);
 
 void putData(int reading);
 
