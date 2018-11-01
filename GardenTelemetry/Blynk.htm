@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Blynk.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Blynk.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Sun Oct 28 20:39:40 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Tue Oct 30 09:50:14 2018
 <BR><P>
 <H3>Maximum Stack Usage =        432 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -866,10 +866,6 @@ Global Symbols
 
 <P><STRONG><a name="[125]"></a>__decompress1</STRONG> (Thumb, 92 bytes, Stack size unknown bytes, __dczerorl2.o(.text), UNUSED)
 
-<P><STRONG><a name="[d9]"></a>ADC0_InSeq3</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, adcswtrigger.o(i.ADC0_InSeq3))
-<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendInformation
-</UL>
-
 <P><STRONG><a name="[108]"></a>ADC0_InitSWTriggerSeq3_Ch9</STRONG> (Thumb, 206 bytes, Stack size 0 bytes, adcswtrigger.o(i.ADC0_InitSWTriggerSeq3_Ch9))
 <BR><BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;initSensors
 </UL>
@@ -940,7 +936,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_SetupWiFi
 <LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutUDec
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutString
-<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
+<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
 </UL>
 
 <P><STRONG><a name="[b3]"></a>ESP8266_OutString</STRONG> (Thumb, 24 bytes, Stack size 8 bytes, esp8266.o(i.ESP8266_OutString))
@@ -949,7 +945,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutChar
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_SetupWiFi
-<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
+<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
 </UL>
 
 <P><STRONG><a name="[b4]"></a>ESP8266_OutUDec</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, esp8266.o(i.ESP8266_OutUDec))
@@ -960,7 +956,7 @@ Global Symbols
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutChar
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutUDec
-<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
+<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
 </UL>
 
 <P><STRONG><a name="[b5]"></a>ESP8266_Reset</STRONG> (Thumb, 68 bytes, Stack size 8 bytes, esp8266.o(i.ESP8266_Reset))
@@ -1241,18 +1237,18 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Output_Color
 </UL>
 
-<P><STRONG><a name="[80]"></a>SendInformation</STRONG> (Thumb, 252 bytes, Stack size 16 bytes, blynk.o(i.SendInformation))
+<P><STRONG><a name="[80]"></a>SendInformation</STRONG> (Thumb, 326 bytes, Stack size 16 bytes, blynk.o(i.SendInformation))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64 + Unknown Stack Size
 <LI>Call Chain = SendInformation &rArr; TM4C_to_Blynk &rArr; ESP8266_OutUDec &rArr;  ESP8266_OutUDec (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;putData
+<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;getSensor
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;getMode
 <LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PortF_Output
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC0_InSeq3
 <LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;changeWaterState
 <LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;changeLightState
 <LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;changeHeaterState
-<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
+<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TM4C_to_Blynk
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> blynk.o(i.masterMain)
 </UL>
@@ -1269,7 +1265,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;masterMain
 </UL>
 
-<P><STRONG><a name="[da]"></a>TM4C_to_Blynk</STRONG> (Thumb, 50 bytes, Stack size 16 bytes, blynk.o(i.TM4C_to_Blynk))
+<P><STRONG><a name="[d9]"></a>TM4C_to_Blynk</STRONG> (Thumb, 50 bytes, Stack size 16 bytes, blynk.o(i.TM4C_to_Blynk))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = TM4C_to_Blynk &rArr; ESP8266_OutUDec &rArr;  ESP8266_OutUDec (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ESP8266_OutUDec
@@ -1647,6 +1643,10 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;masterMain
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendInformation
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Blynk_to_TM4C
+</UL>
+
+<P><STRONG><a name="[da]"></a>getSensor</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, clock.o(i.getSensor))
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendInformation
 </UL>
 
 <P><STRONG><a name="[105]"></a>graphSensorsMode</STRONG> (Thumb, 278 bytes, Stack size 24 bytes, clock.o(i.graphSensorsMode))

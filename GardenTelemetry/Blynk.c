@@ -276,18 +276,27 @@ void Blynk_to_TM4C(void){int j; char data;
 void SendInformation(void)
 {
 	// your account will be temporarily halted if you send too much data
-	int reading1 = ADC0_InSeq3();
-	int reading2 = 1200;
-	int reading3 = 1200;
+	//int reading1 = ADC0_InSeq3();
+	static int num;
+	int reading1;
+	if(num == 0) {num = 1; reading1 = 50;}
+	else if(num == 1){num = 0; reading1= 4000;}
+	int reading2 = 100;
+	int reading3 = 1300;
 	//int reading2 = ADC0_InSeq1();
 	//int reading3 = ADC0_InSeq2();
 	
   PortF_Output(1, 1);	
 	
-	TM4C_to_Blynk(74, reading1);  // VP74
+	TM4C_to_Blynk(74, reading1);  
+	TM4C_to_Blynk(75, reading2);
+	TM4C_to_Blynk(76, reading3);
+	
 	if(getMode() == GRAPH_SENSORS_MODE)
 	{
-		putData(reading1);
+		if(getSensor() == 0) {putData(reading1);}
+		else if(getSensor() == 1) {putData(reading2);}
+		else {putData(reading3);}
 	}
 	
 	if(reading1 <= readingLimit1 && isMaster)
